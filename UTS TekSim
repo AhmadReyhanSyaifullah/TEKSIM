@@ -1,0 +1,126 @@
+#soal UTS No1
+
+Additive_RNG<-function(a,z0,c,m,n) {
+  xi<-matrix(NA,n,3)
+  colnames(xi)<-c("aZ(i-1)+c","Xi","Ui")
+  for (i in 1:n)
+  {
+    xi[i,1]<-(a*z0+c)
+    xi[i,2]<-xi[i,1]%%m
+    xi[i,3]<-xi[i,2]/m
+    z0<-xi[i,2]
+  }
+  hist(xi[,3])
+  View(xi)
+}
+Additive_RNG(199,12359,2379,1389,1000)
+
+multiplicative_RNG<-function(a,z0,m,n) {
+  xj<-matrix(NA,n,3)
+  colnames(xj)<-c("aZ(i-1)","Xj","Uj")
+  for (j in 1:n)
+  {
+    xj[j,1]<-(a*z0)
+    xj[j,2]<-xj[j,1]%%m
+    xj[j,3]<-xj[j,2]/m
+    z0<-xj[j,2]
+  }
+  hist(xj[,3])
+  View(xj)
+}
+multiplicative_RNG(199,12359,1389,1000)
+
+#soal UTS no.2
+#Gamma(a=4 , b=5)
+i<-1000
+lambda<-3
+alpha<-4
+U<-log(runif(i*alpha))
+Um<-matrix(U,i)
+Y<-apply(Um,1,sum)
+Gamma<--Y/lambda
+hist(Gamma)
+y
+Gamma
+
+#soal UTS no.3
+p <- 0.3 #probabilitas Keberhasilan
+
+geometric_inverse_transform <- function(n,p) {
+  random_numbers <-numeric(n)
+  
+  for(i in 1:n){
+    U<-runif(1)
+    k<-floor(log(1- U)/ log(1- p)) + 1
+    random_numbers[i] <- k
+  }
+  
+  return(random_numbers)
+}
+
+random_data_geometric<-geometric_inverse_transform(1000,0.3)
+random_data_geometric
+
+#soal no.4
+# Fungsi untuk menghitung nilai log-likelihood dari model regresi linear
+calculate_log_likelihood <- function(Y, X1, X2, beta) {
+  n <- length(Y)
+  epsilon <- Y - (beta[1] + beta[2]*X1 + beta[3]*X2)
+  log_likelihood <- -(n/2)*log(2*pi) - (1/2)*sum(epsilon^2)
+  return(log_likelihood)
+}
+
+# Fungsi untuk menghasilkan sampel baru berdasarkan distribusi proposal
+generate_proposed_sample <- function(current_sample, proposal_sd) {
+  proposed_sample <- current_sample + rnorm(length(current_sample), sd = proposal_sd)
+  return(proposed_sample)
+}
+
+# Fungsi untuk menjalankan algoritma MCMC Metropolis-Hastings
+run_mcmc_metropolis_hastings <- function(Y, X1, X2, initial_sample, num_iterations, proposal_sd) {
+  n <- length(Y)
+  accepted_samples <- matrix(NA, nrow = num_iterations, ncol = length(initial_sample))
+  accepted_samples[1, ] <- initial_sample
+  current_sample <- initial_sample
+  current_log_likelihood <- calculate_log_likelihood(Y, X1, X2, current_sample)
+  
+  for (i in 2:num_iterations) {
+    proposed_sample <- generate_proposed_sample(current_sample, proposal_sd)
+    proposed_log_likelihood <- calculate_log_likelihood(Y, X1, X2, proposed_sample)
+    
+    acceptance_ratio <- min(1, exp(proposed_log_likelihood - current_log_likelihood))
+    
+    if (runif(1) < acceptance_ratio) {
+      accepted_samples[i, ] <- proposed_sample
+      current_sample <- proposed_sample
+      current_log_likelihood <- proposed_log_likelihood
+    } else {
+      accepted_samples[i, ] <- current_sample
+    }
+  }
+  
+  accepted_samples_df <- as.data.frame(accepted_samples)
+  colnames(accepted_samples_df) <- c("Intercept", "X1", "X2")
+  
+  return(accepted_samples_df)
+}
+
+# Data simulasi regresi linear
+n <- 100  # Jumlah observasi
+X1 <- runif(n, 0, 10)  # Variabel prediktor X1
+X2 <- runif(n, 0, 10)  # Variabel prediktor X2
+epsilon <- rnorm(n, 0, 1)  # Komponen error epsilon
+Y <- 5.32 + 0.12*X1 + 0.05*X2 + epsilon  # Variabel respons Y
+
+# Parameter awal dan konfigurasi MCMC
+initial_sample <- c(5, 0.1, 0.1)  # Nilai awal parameter beta
+num_iterations <- 10000  # Jumlah iterasi MCMC
+proposal_sd <- c(0.1, 0.1, 0.1)  # Standar deviasi distribusi proposal
+
+# Menjalankan MCMC Metropolis-Hastings
+samples <- run_mcmc_metropolis_hastings(Y, X1, X2, initial_sample, num_iterations, proposal_sd)
+
+# Melihat hasil sampel yang diterima
+head(samples)
+     
+     
